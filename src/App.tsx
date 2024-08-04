@@ -1,11 +1,9 @@
-import "./App.css";
+import { RouterProvider } from "react-router-dom";
+import "./index.css";
+import router from "./Routes";
 
-function App() {
-  return (
-    <>
-      <h1>Verifier</h1>
-    </>
-  );
-}
+const App = () => {
+  return <RouterProvider router={router} />;
+};
 
 export default App;
