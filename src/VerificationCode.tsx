@@ -1,6 +1,7 @@
 import axios from "axios";
 import { KeyboardEvent, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import config from "./config";
 
 const INPUT_SIZE = 6;
 
@@ -116,7 +117,7 @@ const VerificationCode = () => {
     setInvalidInputs(newInvalidInputs);
 
     try {
-      const response = await axios.post("http://localhost:3000/verify", {
+      const response = await axios.post(`${config.SERVER_URL}/verify`, {
         code,
       });
       if (response?.data?.success) {
