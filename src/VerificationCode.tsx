@@ -1,6 +1,9 @@
+import axios from "axios";
 import { KeyboardEvent, useEffect, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 const VerificationCode = () => {
+  const navigate = useNavigate();
   const [code, setCode] = useState("");
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
@@ -79,6 +82,21 @@ const VerificationCode = () => {
     }
   };
 
+  const handleSubmit = async () => {
+    try {
+      const response = await axios.post("http://localhost:3000/verify", {
+        code,
+      });
+      if (response?.data?.success) {
+        navigate("success");
+      } else {
+        console.error("");
+      }
+    } catch (e) {
+      console.error("An error occured: ", e);
+    }
+  };
+
   return (
     <div className="w-full flex justify-center">
       <div className="w-[80%] h-screen flex flex-col mt-28 items-center">
@@ -103,7 +121,10 @@ const VerificationCode = () => {
             />
           ))}
         </div>
-        <button className="mt-10 flex flex-row items-center justify-center text-center border w-96 rounded-xl outline-none py-5 bg-blue-700 border-none text-white text-sm shadow-sm">
+        <button
+          onClick={handleSubmit}
+          className="mt-10 flex flex-row items-center justify-center text-center border w-96 rounded-xl outline-none py-5 bg-blue-700 border-none text-white text-sm shadow-sm"
+        >
           Submit
         </button>
       </div>
