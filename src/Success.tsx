@@ -1,4 +1,16 @@
+import { useEffect } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+
 const Success = () => {
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!location?.state?.fromVerification) {
+      navigate("/");
+    }
+  }, [location, navigate]);
+
   return (
     <div className="w-full flex justify-center">
       <div className="w-[80%] h-screen flex flex-col mt-28 items-center gap-10">

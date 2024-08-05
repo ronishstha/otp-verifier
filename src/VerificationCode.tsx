@@ -121,7 +121,7 @@ const VerificationCode = () => {
         code,
       });
       if (response?.data?.success) {
-        navigate("success");
+        navigate("success", { state: { fromVerification: true } });
       } else {
         setError(true);
       }
