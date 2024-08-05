@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 const VerificationCode = () => {
   const navigate = useNavigate();
   const [code, setCode] = useState("");
+  const [error, setError] = useState(false);
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
   useEffect(() => {
@@ -83,6 +84,7 @@ const VerificationCode = () => {
   };
 
   const handleSubmit = async () => {
+    setError(false);
     try {
       const response = await axios.post("http://localhost:3000/verify", {
         code,
@@ -90,20 +92,21 @@ const VerificationCode = () => {
       if (response?.data?.success) {
         navigate("success");
       } else {
-        console.error("");
+        setError(true);
       }
     } catch (e) {
+      setError(true);
       console.error("An error occured: ", e);
     }
   };
 
   return (
     <div className="w-full flex justify-center">
-      <div className="w-[80%] h-screen flex flex-col mt-28 items-center">
+      <div className="w-[80%] h-screen flex flex-col mt-28 items-center gap-10">
         <div className="w-full flex justify-center">
           <p className="font-bold text-lg">Verification Code</p>
         </div>
-        <div className="w-full flex mt-10 gap-4 justify-center">
+        <div className="w-full flex gap-4 justify-center">
           {[...Array(6)].map((_, index) => (
             <input
               className="w-14 h-14 text-center text-2xl font-extrabold text-slate-900 bg-slate-100 border border-transparent hover:border-slate-200 appearance-none rounded p-4 outline-none focus:bg-white focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
@@ -123,10 +126,18 @@ const VerificationCode = () => {
         </div>
         <button
           onClick={handleSubmit}
-          className="mt-10 flex flex-row items-center justify-center text-center border w-96 rounded-xl outline-none py-5 bg-blue-700 border-none text-white text-sm shadow-sm"
+          className="flex flex-row items-center justify-center text-center border w-96 rounded-xl outline-none py-5 bg-blue-700 border-none text-white text-sm shadow-sm"
         >
           Submit
         </button>
+        {error && (
+          <div
+            className="p-4 mb-4 text-sm text-red-800 rounded-lg bg-red-50 dark:text-red-400 w-96 flex justify-center"
+            role="alert"
+          >
+            <span className="font-medium">Verification Error!</span>
+          </div>
+        )}
       </div>
     </div>
   );
