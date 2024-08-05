@@ -1,6 +1,6 @@
 import { createBrowserRouter } from "react-router-dom";
-import VerificationCode from "./VerificationCode";
-import Success from "./Success";
+import VerificationCode from "../pages/VerificationCode";
+import Success from "../pages/Success";
 
 const router = createBrowserRouter([
   {
