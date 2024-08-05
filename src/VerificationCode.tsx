@@ -2,29 +2,42 @@ import axios from "axios";
 import { KeyboardEvent, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
+const INPUT_SIZE = 6;
+
 const VerificationCode = () => {
   const navigate = useNavigate();
   const [code, setCode] = useState("");
   const [error, setError] = useState(false);
+  const [invalidInputs, setInvalidInputs] = useState<boolean[]>(
+    new Array(INPUT_SIZE).fill(false)
+  );
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
   useEffect(() => {
-    inputRefs.current = inputRefs.current.slice(0, 6);
+    inputRefs.current = inputRefs.current.slice(0, INPUT_SIZE);
   }, []);
 
-  const handleChange = (element: HTMLInputElement, index: number) => {
+  const handleInput = (element: HTMLInputElement, index: number) => {
     const value = element.value;
-    setCode((currentCode) => {
-      const splitCode = currentCode.split("");
-      if (value.length > 1) {
-        splitCode[index] = value[0];
-      } else {
-        splitCode[index] = value;
-      }
-      const joinedCode = splitCode.join("");
+    if (value.length < 2 && code[index] !== element.value) {
+      setCode((currentCode) => {
+        const splitCode = currentCode.split("");
+        if (value.length > 1) {
+          splitCode[index] = value[0];
+        } else {
+          splitCode[index] = value;
+        }
+        const joinedCode = splitCode.join("");
 
-      return joinedCode;
-    });
+        return joinedCode;
+      });
+
+      setInvalidInputs((prev) => {
+        const newInvalidInputs = [...prev];
+        newInvalidInputs[index] = value === "" || isNaN(Number(value));
+        return newInvalidInputs;
+      });
+    }
 
     // Focus next input
     if (value && element.nextSibling) {
@@ -39,15 +52,25 @@ const VerificationCode = () => {
 
   const handlePaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
     e.preventDefault();
-    const pasteData = e?.clipboardData.getData("text").slice(0, 6);
-    setCode(pasteData.padEnd(6, ""));
+    const pasteData = e?.clipboardData.getData("text").slice(0, INPUT_SIZE);
+    setCode(pasteData);
+
+    const newInvalidInputs = pasteData
+      .split("")
+      .map((char) => char === "" || isNaN(Number(char)));
+    newInvalidInputs.length = INPUT_SIZE;
+    for (let i = pasteData.length; i < INPUT_SIZE; i++) {
+      newInvalidInputs[i] = true;
+    }
+    setInvalidInputs(newInvalidInputs);
+
     inputRefs.current.forEach((input, index) => {
       if (input) {
         input.value = pasteData[index] || "";
       }
     });
 
-    if (pasteData.length < 6) {
+    if (pasteData.length < INPUT_SIZE) {
       inputRefs?.current[pasteData.length]?.focus();
     } else {
       inputRefs?.current[5]?.focus();
@@ -85,6 +108,13 @@ const VerificationCode = () => {
 
   const handleSubmit = async () => {
     setError(false);
+    const newInvalidInputs = [];
+
+    for (let i = 0; i < INPUT_SIZE; i++) {
+      newInvalidInputs[i] = !code[i] || isNaN(Number(code[i])) ? true : false;
+    }
+    setInvalidInputs(newInvalidInputs);
+
     try {
       const response = await axios.post("http://localhost:3000/verify", {
         code,
@@ -107,16 +137,20 @@ const VerificationCode = () => {
           <p className="font-bold text-lg">Verification Code</p>
         </div>
         <div className="w-full flex gap-4 justify-center">
-          {[...Array(6)].map((_, index) => (
+          {[...Array(INPUT_SIZE)].map((_, index) => (
             <input
-              className="w-14 h-14 text-center text-2xl font-extrabold text-slate-900 bg-slate-100 border border-transparent hover:border-slate-200 appearance-none rounded p-4 outline-none focus:bg-white focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
+              className={`w-14 h-14 text-center text-2xl font-extrabold text-slate-900 bg-slate-100 border border-transparent hover:border-slate-200 appearance-none rounded p-4 outline-none focus:bg-white focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 ${
+                invalidInputs[index]
+                  ? "border-red-300 bg-red-50 hover:border-red-300 focus:border-red-400 focus:ring-2 focus:ring-red-50"
+                  : ""
+              }`}
               type="text"
               name="code"
               key={index}
               value={code[index] || ""}
               autoComplete="off"
               ref={(ref) => (inputRefs.current[index] = ref)}
-              onChange={(e) => handleChange(e.target, index)}
+              onInput={(e) => handleInput(e.currentTarget, index)}
               onClick={handleClick}
               onFocus={(e) => e.target.select()}
               onKeyDown={(e) => handleKeyDown(e, index)}
