@@ -15,9 +15,10 @@ const VerificationCode = () => {
   );
   const [error, setError] = useState(false);
   const [code, setCode] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const handleSubmit = async () => {
-    setError(false);
+    setLoading(true);
     const newInvalidInputs = [];
 
     for (let i = 0; i < INPUT_SIZE; i++) {
@@ -38,6 +39,7 @@ const VerificationCode = () => {
       setError(true);
       console.error("An error occured: ", e);
     }
+    setLoading(false);
   };
 
   return (
@@ -52,7 +54,7 @@ const VerificationCode = () => {
         setInvalidInputs={setInvalidInputs}
         inputSize={INPUT_SIZE}
       />
-      <Button onSubmit={handleSubmit} label="Submit" />
+      <Button onSubmit={handleSubmit} label="Submit" loading={loading} />
       {error && <Error />}
     </>
   );
